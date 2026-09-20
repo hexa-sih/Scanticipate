@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <div id="app_title">
+        <h1>SCANTICIPATE</h1>
+      </div>
+    </header>
+    <main>
+      <div id="panel_holder">
+        <div id="login_panel">
+          <form onsubmit="handleLogin(event)">
+            <h2>Login</h2>
+            <div class="login_element">
+              <label for="username">Username:</label>
+              <input type="text" id="username" name="username" required />
+            </div>
+            <div class="login_element">
+              <label for="password">Password:</label>
+              <input type="password" id="password" name="password" required />
+            </div>
+            <div class="login_element">
+              <label for="role">Log in as:</label>
+              <select id="role" name="role" required>
+                <option value="" disabled selected>
+                  -- Select your role --
+                </option>
+                <option value="inspector">Inspector</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+            <div class="login_element">
+              <button type="submit">Log In</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+    <script src="index.js?v=2"></script>
+  </body>
+</html>

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin - Task Management & Requests Dashboard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      body {
+        background: #f8fafc;
+        color: #0f172a;
+        padding: 24px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .header h1 {
+        font-size: 1.5rem;
+        color: #1e293b;
+      }
+      .nav-btn {
+        background: #2563eb;
+        color: white;
+        text-decoration: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      .logout-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        margin-left: 10px;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: white;
+        padding: 18px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+      }
+      .stat-card h4 {
+        font-size: 0.8rem;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .stat-card p {
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 16px;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 8px;
+      }
+      .tab-btn {
+        background: none;
+        border: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #64748b;
+        padding: 8px 16px;
+        cursor: pointer;
+        border-radius: 6px;
+      }
+      .tab-btn.active {
+        background: #0f172a;
+        color: white;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+      }
+      th,
+      td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.9rem;
+      }
+      th {
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 700;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.75rem;
+      }
+      .badge-requested {
+        background: #fef3c7;
+        color: #b45309;
+      }
+      .badge-assigned {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+      .badge-declined {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      .badge-completed {
+        background: #dcfce7;
+        color: #15803d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div>
+        <h1>Task Request & Approval Dashboard</h1>
+        <p style="color: #64748b; font-size: 0.9rem; margin-top: 4px">
+          Welcome, <span id="welcomeTaskAdminName">Admin</span> 👋
+        </p>
+      </div>
+      <div>
+        <a href="/admin.html" class="nav-btn">← Back to Map View</a>
+        <button class="logout-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h4>Requested Tasks</h4>
+        <p id="statRequested" style="color: #b45309">0</p>
+      </div>
+      <div class="stat-card">
+        <h4>Approved / Active</h4>
+        <p id="statAssigned" style="color: #1d4ed8">0</p>
+      </div>
+      <div class="stat-card">
+        <h4>Declined Requests</h4>
+        <p id="statDeclined" style="color: #b91c1c">0</p>
+      </div>
+      <div class="stat-card">
+        <h4>Completed Audits</h4>
+        <p id="statCompleted" style="color: #15803d">0</p>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="filterTable('ALL')">
+        All Tasks
+      </button>
+      <button class="tab-btn" onclick="filterTable('REQUESTED')">
+        Pending Requests
+      </button>
+      <button class="tab-btn" onclick="filterTable('ASSIGNED')">
+        Approved / Active
+      </button>
+      <button class="tab-btn" onclick="filterTable('DECLINED')">
+        Declined
+      </button>
+      <button class="tab-btn" onclick="filterTable('COMPLETED')">
+        Completed
+      </button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Task ID</th>
+          <th>Location Name</th>
+          <th>Assigned Inspector</th>
+          <th>Risk Score</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="taskTableBody">
+        <tr>
+          <td colspan="5" style="text-align: center; color: #64748b">
+            Loading tasks...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script>
+      let allTasks = [];
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const username = sessionStorage.getItem("username") || "Admin";
+        document.getElementById("welcomeTaskAdminName").textContent = username;
+      });
+
+      function handleLogout() {
+        sessionStorage.clear();
+        window.location.href = "/index.html";
+      }
+
+      async function fetchAllTasks() {
+        try {
+          const res = await fetch("/api/admin/tasks/all");
+          allTasks = await res.json();
+          updateStats();
+          filterTable("ALL");
+        } catch (err) {
+          console.error("Error fetching tasks:", err);
+        }
+      }
+
+      function updateStats() {
+        document.getElementById("statRequested").textContent = allTasks.filter(
+          (t) => t.status === "REQUESTED",
+        ).length;
+        document.getElementById("statAssigned").textContent = allTasks.filter(
+          (t) => t.status === "ASSIGNED",
+        ).length;
+        document.getElementById("statDeclined").textContent = allTasks.filter(
+          (t) => t.status === "DECLINED",
+        ).length;
+        document.getElementById("statCompleted").textContent = allTasks.filter(
+          (t) => t.status === "COMPLETED",
+        ).length;
+      }
+
+      function filterTable(statusFilter) {
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+        event.target.classList.add("active");
+
+        const tbody = document.getElementById("taskTableBody");
+        const filtered =
+          statusFilter === "ALL"
+            ? allTasks
+            : allTasks.filter((t) => t.status === statusFilter);
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">No ${statusFilter.toLowerCase()} tasks found.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtered
+          .map(
+            (t) => `
+          <tr>
+            <td>#${t.id}</td>
+            <td><strong>${t.locationName}</strong></td>
+            <td>${t.inspector ? t.inspector.username : "Unassigned"}</td>
+            <td>${t.riskScore ? t.riskScore.toFixed(2) : "N/A"}</td>
+            <td><span class="badge badge-${(t.status || "requested").toLowerCase()}">${t.status}</span></td>
+          </tr>
+        `,
+          )
+          .join("");
+      }
+
+      fetchAllTasks();
+    </script>
+  </body>
+</html>

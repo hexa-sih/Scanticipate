@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Legal Metrology - Admin Risk & Task Assignment</title>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="user-bar">
+        <span class="user-greeting"
+          >Welcome, <span id="welcomeAdminName">Admin</span> 👋</span
+        >
+        <button onclick="handleLogout()" class="logout-btn">Logout</button>
+      </div>
+
+      <h2>Audit Dashboard</h2>
+      <div class="stat-card">
+        <h4>Predicted High-Risk Zones</h4>
+        <p id="zoneCount">0 Hotspots</p>
+      </div>
+      <div class="stat-card">
+        <h4>Active Field Inspectors</h4>
+        <p id="inspectorCount">Loading...</p>
+      </div>
+
+      <div class="stat-card stat-card-white">
+        <h4>Submitted Inspection Reports</h4>
+        <div id="completedTasksList" class="completed-list">
+          <p class="loading-text">Loading submitted audits...</p>
+        </div>
+      </div>
+
+      <p class="instruction-text">
+        Click on any store pin or heat zone on the map to request an inspector
+        task.
+      </p>
+
+      <div class="action-buttons-group">
+        <a href="/task-dashboard.html" class="btn btn-primary btn-task-dash">
+          📋 View Task Request Dashboard
+        </a>
+        <button
+          class="btn btn-primary btn-register-inspector"
+          onclick="openRegisterModal()"
+        >
+          + Register New Inspector
+        </button>
+      </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="taskModal" class="modal">
+      <div class="modal-content">
+        <h3>Request Inspection Task</h3>
+
+        <div class="form-group">
+          <label>Target Location Name</label>
+          <input
+            type="text"
+            id="locationName"
+            placeholder="e.g. Market Hub Sector 4"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Risk Assessment Score</label>
+          <input type="text" id="riskScore" readonly class="input-readonly" />
+        </div>
+
+        <div class="form-group">
+          <label>Select Available Inspector</label>
+          <select id="inspectorSelect">
+            <option value="">-- Choose Inspector --</option>
+          </select>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="closeModal()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="submitTaskAssignment()">
+            Request Task
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="registerModal" class="modal">
+      <div class="modal-content">
+        <h3>Register Field Inspector</h3>
+
+        <div class="form-group">
+          <label>Inspector Username / ID</label>
+          <input type="text" id="regUsername" placeholder="e.g. inspector4" />
+        </div>
+
+        <div class="form-group">
+          <label>Assigned Base Latitude</label>
+          <input
+            type="number"
+            step="any"
+            id="regLat"
+            placeholder="19.0760"
+            value="19.0760"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Assigned Base Longitude</label>
+          <input
+            type="number"
+            step="any"
+            id="regLng"
+            placeholder="72.8777"
+            value="72.8777"
+          />
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="closeRegisterModal()">
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            onclick="submitInspectorRegistration()"
+          >
+            Register Inspector
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="reportModal" class="modal">
+      <div class="modal-content report-modal">
+        <h3 id="reportModalTitle">Legal Metrology Inspection Report</h3>
+        <p id="reportModalMeta" class="report-meta"></p>
+
+        <div id="reportModalBody" class="report-preview-box"></div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="closeReportModal()">
+            Close Report
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="imageLightboxModal" class="modal" style="z-index: 3000">
+      <div
+        class="modal-content"
+        style="
+          width: auto;
+          max-width: 90vw;
+          background: #0f172a;
+          padding: 20px;
+          text-align: center;
+          color: white;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+          "
+        >
+          <h3 style="color: white; font-size: 1rem; margin: 0">
+            🔎 Inspection Image Zoom Viewer
+          </h3>
+          <button
+            onclick="closeLightboxModal()"
+            style="
+              background: #ef4444;
+              color: white;
+              border: none;
+              padding: 6px 12px;
+              border-radius: 4px;
+              font-weight: bold;
+              cursor: pointer;
+            "
+          >
+            Close &times;
+          </button>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 12px;
+          "
+        >
+          <button
+            onclick="zoomImage(1.2)"
+            style="
+              background: #2563eb;
+              color: white;
+              border: none;
+              padding: 6px 14px;
+              border-radius: 4px;
+              font-weight: bold;
+              cursor: pointer;
+            "
+          >
+            🔍 Zoom In (+)
+          </button>
+          <button
+            onclick="zoomImage(0.8)"
+            style="
+              background: #2563eb;
+              color: white;
+              border: none;
+              padding: 6px 14px;
+              border-radius: 4px;
+              font-weight: bold;
+              cursor: pointer;
+            "
+          >
+            🔍 Zoom Out (-)
+          </button>
+          <button
+            onclick="resetImageZoom()"
+            style="
+              background: #64748b;
+              color: white;
+              border: none;
+              padding: 6px 14px;
+              border-radius: 4px;
+              font-weight: bold;
+              cursor: pointer;
+            "
+          >
+            🔄 Reset Zoom
+          </button>
+        </div>
+
+        <div
+          id="lightboxContainer"
+          style="
+            overflow: hidden;
+            max-height: 70vh;
+            max-width: 80vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            background: #020617;
+            cursor: grab;
+          "
+        >
+          <img
+            id="lightboxImage"
+            src=""
+            alt="Zoomable Packaging Label"
+            style="
+              max-height: 65vh;
+              transform-origin: center center;
+              transition: transform 0.1s ease-out;
+              user-select: none;
+            "
+          />
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>
