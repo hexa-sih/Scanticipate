@@ -18,10 +18,10 @@ The application utilizes **Google Gemini Multimodal VLM** to automatically audit
 
 ## Tech Stack
 
-- **Backend:** Java 17, Spring Boot 3, Spring Data JPA, H2 Database
+- **Backend:** Java 26, Spring Boot 4, Spring Data JPA, H2 Database
 - **AI Engine:** Google Gemini VLM API (`gemini-3.8-flash` / `gemini-3.7-flash`/ `gemini-3.6-flash`)
 - **Spatial ML Microservice:** Python 3.10+, FastAPI, NumPy, Uvicorn
-- **Frontend:** Vanilla HTML5, CSS3, JavaScript (ES6+), Leaflet.js, Leaflet.heat, Leaflet Routing Machine
+- **Frontend:** Vanilla HTML5, CSS3, JavaScript (ES15), Leaflet.js, Leaflet.heat, Leaflet Routing Machine
 
 ## Getting Started
 
