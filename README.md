@@ -86,6 +86,8 @@ python ml_service.py
 
 **Database Console**: http://localhost:8080/h2-console
 
+**Note**: The login IDs, Passwords and Store Details are provided in the "USER_AND_STORE_DATA.txt" file.
+
 ---
 
 **Developed for Smart India Hackathon (SIH 26034) - Legal Metrology Rules Compliance Enforcement.**
